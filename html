@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TinySquares Photo Grid</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f0f0f0;
+      font-family: sans-serif;
+      overflow: hidden;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      padding: 20px;
+      overflow: auto;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+    .polaroid {
+      background: white;
+      border: 10px solid white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transform-style: preserve-3d;
+      transition: transform 0.8s;
+      perspective: 1000px;
+      position: relative;
+    }
+    .polaroid-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+    }
+    .polaroid.flipped .polaroid-inner {
+      transform: rotateY(180deg);
+    }
+    .front, .back {
+      position: absolute;
+      width: 100%;
+      backface-visibility: hidden;
+    }
+    .front img {
+      width: 100%;
+      display: block;
+    }
+    .back {
+      background: #fff;
+      transform: rotateY(180deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1em;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid" id="photoGrid"></div>
+
+  <script>
+    const baseURL = 'https://dev.tinysquares.io/';
+    const workerURL = 'https://quiet-mouse-8001.flaxen-huskier-06.workers.dev/';
+
+    async function fetchFilenames() {
+      const res = await fetch(workerURL);
+      const filenames = await res.json();
+      return filenames.sort(() => Math.random() - 0.5); // Shuffle
+    }
+
+    async function loadImages() {
+      const grid = document.getElementById('photoGrid');
+      const filenames = await fetchFilenames();
+
+      for (const filename of filenames) {
+        const container = document.createElement('div');
+        container.className = 'polaroid';
+        const inner = document.createElement('div');
+        inner.className = 'polaroid-inner';
+
+        const front = document.createElement('div');
+        front.className = 'front';
+        const img = document.createElement('img');
+        img.src = baseURL + filename;
+        front.appendChild(img);
+
+        const back = document.createElement('div');
+        back.className = 'back';
+        back.innerText = `Information about ${filename}`; // Replace with your actual descriptions
+
+        inner.appendChild(front);
+        inner.appendChild(back);
+        container.appendChild(inner);
+        grid.appendChild(container);
+
+        container.addEventListener('click', () => {
+          container.classList.toggle('flipped');
+        });
+      }
+    }
+
+    loadImages();
+  </script>
+</body>
+</html>
