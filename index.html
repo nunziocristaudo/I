@@ -29,7 +29,6 @@
       transition: transform 0.8s ease;
       perspective: 1000px;
       position: relative;
-      aspect-ratio: 1 / 1.2;
       display: flex;
     }
     .polaroid-inner {
@@ -52,8 +51,7 @@
       width: 100%;
       height: 100%;
       display: block;
-      object-fit: cover;
-      aspect-ratio: 1 / 1;
+      object-fit: contain;
     }
     .back {
       background: #fff;
@@ -93,6 +91,9 @@
         front.className = 'front';
         const img = document.createElement('img');
         img.src = baseURL + filename;
+        img.addEventListener('load', () => {
+          container.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+        });
         front.appendChild(img);
 
         const back = document.createElement('div');
