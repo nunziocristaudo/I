@@ -85,9 +85,6 @@
       opacity: 0;
       transition: opacity 0.3s;
     }
-    .gallery-item:hover .caption {
-      opacity: 1;
-    }
     @media (max-width: 768px) {
       .gallery { column-count: 2; }
     }
@@ -130,6 +127,9 @@
 
         div.appendChild(img);
         div.appendChild(caption);
+        div.addEventListener('click', () => {
+          caption.remove();
+        });
         container.appendChild(div);
       }
     }
