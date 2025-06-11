@@ -85,6 +85,9 @@
       opacity: 0;
       transition: opacity 0.3s;
     }
+    .caption.hidden {
+      display: none;
+    }
     .gallery-item:hover .caption {
       opacity: 1;
     }
@@ -130,6 +133,9 @@
 
         div.appendChild(img);
         div.appendChild(caption);
+        div.addEventListener('click', () => {
+          caption.classList.add('hidden');
+        });
         container.appendChild(div);
       }
     }
