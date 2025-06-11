@@ -8,13 +8,47 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #ffffff;
+      --bg: #ffffff;
+      --text: #000000;
+      --caption-bg: rgba(0,0,0,0.7);
+      --caption-text: #ffffff;
+      background: var(--bg);
+      color: var(--text);
+    }
+    body.dark-mode {
+      --bg: #121212;
+      --text: #f0f0f0;
+      --caption-bg: rgba(255,255,255,0.3);
+      --caption-text: #000000;
     }
     header {
+      position: relative;
       text-align: center;
       padding: 2rem 0;
       font-size: 1.5rem;
       letter-spacing: 0.1em;
+      background: var(--bg);
+      color: var(--text);
+    }
+    #dark-toggle {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 0.25rem 0.75rem;
+      border: none;
+      border-radius: 4px;
+      background: #000;
+      color: #fff;
+      cursor: pointer;
+      display: none;
+    }
+    body.dark-mode #dark-toggle {
+      background: #fff;
+      color: #000;
+    }
+    header:hover #dark-toggle {
+      display: block;
     }
     .gallery {
       column-count: 4;
@@ -44,8 +78,8 @@
       left: 0;
       right: 0;
       padding: 0.5rem;
-      background: rgba(0,0,0,0.7);
-      color: #fff;
+      background: var(--caption-bg);
+      color: var(--caption-text);
       font-size: 0.9rem;
       text-align: center;
       opacity: 0;
@@ -63,7 +97,10 @@
   </style>
 </head>
 <body>
-  <header>Photography</header>
+  <header>
+    Photography
+    <button id="dark-toggle" aria-label="Toggle dark mode">&#9788;</button>
+  </header>
   <div class="gallery" id="gallery"></div>
 
   <script>
@@ -98,6 +135,10 @@
     }
 
     init();
+
+    document.getElementById('dark-toggle').addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+    });
   </script>
 </body>
 </html>
