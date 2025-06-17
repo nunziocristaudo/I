@@ -91,6 +91,27 @@
     .gallery-item:hover .caption {
       opacity: 1;
     }
+    .viewer {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .viewer.hidden {
+      display: none;
+    }
+    #viewer-img {
+      max-width: 90%;
+      max-height: 90%;
+    }
+    #viewer-caption {
+      margin-top: 0.5rem;
+      color: #fff;
+    }
     @media (max-width: 768px) {
       .gallery { column-count: 2; }
     }
@@ -105,22 +126,96 @@
     <button id="dark-toggle" aria-label="Toggle dark mode">&#9788;</button>
   </header>
   <div class="gallery" id="gallery"></div>
+  <div id="viewer" class="viewer hidden">
+    <img id="viewer-img" src="" alt="" />
+    <div id="viewer-caption"></div>
+  </div>
 
   <script>
     const baseURL = 'https://dev.tinysquares.io/';
     const workerURL = 'https://quiet-mouse-8001.flaxen-huskier-06.workers.dev/';
 
+    let filenames = [];
+    let currentIndex = 0;
+
+    const viewer = document.getElementById('viewer');
+    const viewerImg = document.getElementById('viewer-img');
+    const viewerCaption = document.getElementById('viewer-caption');
+
     async function fetchFilenames() {
       const res = await fetch(workerURL);
-      const filenames = await res.json();
-      return filenames.sort(() => Math.random() - 0.5);
+      const list = await res.json();
+      return list.sort(() => Math.random() - 0.5);
     }
+
+    function showImage(index) {
+      currentIndex = (index + filenames.length) % filenames.length;
+      viewerImg.src = baseURL + filenames[currentIndex];
+      viewerCaption.textContent = filenames[currentIndex];
+    }
+
+    function openViewer(index) {
+      showImage(index);
+      viewer.classList.remove('hidden');
+    }
+
+    function closeViewer() {
+      viewer.classList.add('hidden');
+    }
+
+    function showNext() {
+      showImage(currentIndex + 1);
+    }
+
+    function showPrev() {
+      showImage(currentIndex - 1);
+    }
+
+    let startX = 0;
+    let startY = 0;
+    let lastTap = 0;
+
+    viewer.addEventListener('touchstart', e => {
+      if (e.touches.length === 1) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }
+    });
+
+    viewer.addEventListener('touchend', e => {
+      const now = Date.now();
+      if (now - lastTap < 300) {
+        lastTap = 0;
+        closeViewer();
+        return;
+      }
+      lastTap = now;
+
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
+        if (Math.abs(dx) >= Math.abs(dy)) {
+          dx < 0 ? showNext() : showPrev();
+        } else {
+          dy < 0 ? showNext() : showPrev();
+        }
+      }
+    });
+
+    viewer.addEventListener('dblclick', closeViewer);
+
+    document.addEventListener('keydown', e => {
+      if (viewer.classList.contains('hidden')) return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') showNext();
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') showPrev();
+      else if (e.key === 'Escape') closeViewer();
+    });
 
     async function init() {
       const container = document.getElementById('gallery');
-      const filenames = await fetchFilenames();
+      filenames = await fetchFilenames();
 
-      for (const name of filenames) {
+      filenames.forEach((name, idx) => {
         const div = document.createElement('div');
         div.className = 'gallery-item';
 
@@ -133,11 +228,10 @@
 
         div.appendChild(img);
         div.appendChild(caption);
-        div.addEventListener('click', () => {
-          caption.classList.add('hidden');
-        });
+        div.addEventListener('click', () => openViewer(idx));
+        div.addEventListener('touchend', () => openViewer(idx));
         container.appendChild(div);
-      }
+      });
     }
 
     init();
