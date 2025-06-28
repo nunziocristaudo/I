@@ -3,100 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Photography Showcase</title>
+  <title>Instagram Style Profile</title>
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      --bg: #ffffff;
-      --text: #000000;
-      --caption-bg: rgba(0,0,0,0.7);
-      --caption-text: #ffffff;
+      --bg: #fafafa;
+      --text: #262626;
+      --border: #dbdbdb;
       background: var(--bg);
       color: var(--text);
+      transition: background 0.3s, color 0.3s;
     }
     body.dark-mode {
-      --bg: #121212;
-      --text: #f0f0f0;
-      --caption-bg: rgba(255,255,255,0.3);
-      --caption-text: #000000;
+      --bg: #000000;
+      --text: #f5f5f5;
+      --border: #333333;
     }
     header {
-      position: relative;
-      text-align: center;
-      padding: 2rem 0;
-      font-size: 1.5rem;
-      letter-spacing: 0.1em;
       background: var(--bg);
       color: var(--text);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem;
+    }
+    .profile {
+      max-width: 935px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    .avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 2rem;
+      border: 1px solid var(--border);
+    }
+    .info {
+      flex: 1;
+    }
+    .username {
+      font-size: 1.8rem;
+      margin: 0 0 0.5rem 0;
+    }
+    .stats span {
+      margin-right: 1rem;
     }
     #dark-toggle {
       position: absolute;
-      right: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      padding: 0.25rem 0.75rem;
+      right: 0;
+      top: 0;
       border: none;
-      border-radius: 4px;
-      background: #000;
-      color: #fff;
+      background: none;
+      font-size: 1.5rem;
       cursor: pointer;
-      display: none;
-    }
-    body.dark-mode #dark-toggle {
-      background: #fff;
-      color: #000;
-    }
-    header:hover #dark-toggle {
-      display: block;
+      color: var(--text);
     }
     .gallery {
-      column-count: 4;
-      column-gap: 1rem;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1rem;
+      max-width: 935px;
+      margin: 2rem auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
     }
     .gallery-item {
-      break-inside: avoid;
-      margin-bottom: 1rem;
       position: relative;
+      padding-bottom: 100%;
       overflow: hidden;
       cursor: pointer;
+      border: 1px solid var(--border);
     }
     .gallery-item img {
-      width: 100%;
-      display: block;
-      transition: transform 0.3s;
-    }
-    .gallery-item:hover img {
-      transform: scale(1.05);
-    }
-    .caption {
       position: absolute;
-      bottom: 0;
+      top: 0;
       left: 0;
-      right: 0;
-      padding: 0.5rem;
-      background: var(--caption-bg);
-      color: var(--caption-text);
-      font-size: 0.9rem;
-      text-align: center;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .caption.hidden {
-      display: none;
-    }
-    .gallery-item:hover .caption {
-      opacity: 1;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     .viewer {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.9);
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       z-index: 999;
@@ -107,40 +98,40 @@
     #viewer-img {
       max-width: 90%;
       max-height: 90%;
-    }
-    #viewer-caption {
-      margin-top: 0.5rem;
-      color: #fff;
-    }
-    @media (max-width: 768px) {
-      .gallery { column-count: 2; }
-    }
-    @media (max-width: 480px) {
-      .gallery { column-count: 1; }
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
   </style>
 </head>
 <body>
   <header>
-    Photography
-    <button id="dark-toggle" aria-label="Toggle dark mode">&#9788;</button>
+    <div class="profile">
+      <img class="avatar" src="https://via.placeholder.com/150" alt="Profile picture"/>
+      <div class="info">
+        <h1 class="username">myprofile</h1>
+        <div class="stats">
+          <span><strong id="post-count">0</strong> posts</span>
+          <span><strong>100</strong> followers</span>
+          <span><strong>200</strong> following</span>
+        </div>
+      </div>
+      <button id="dark-toggle" aria-label="Toggle dark mode"></button>
+    </div>
   </header>
+
   <div class="gallery" id="gallery"></div>
+
   <div id="viewer" class="viewer hidden">
-    <img id="viewer-img" src="" alt="" />
-    <div id="viewer-caption"></div>
+    <img id="viewer-img" src="" alt="Full size" />
   </div>
 
   <script>
     const baseURL = 'https://dev.tinysquares.io/';
     const workerURL = 'https://quiet-mouse-8001.flaxen-huskier-06.workers.dev/';
-
     let filenames = [];
     let currentIndex = 0;
 
     const viewer = document.getElementById('viewer');
     const viewerImg = document.getElementById('viewer-img');
-    const viewerCaption = document.getElementById('viewer-caption');
 
     async function fetchFilenames() {
       const res = await fetch(workerURL);
@@ -151,7 +142,7 @@
     function showImage(index) {
       currentIndex = (index + filenames.length) % filenames.length;
       viewerImg.src = baseURL + filenames[currentIndex];
-      viewerCaption.textContent = filenames[currentIndex];
+      viewerImg.alt = filenames[currentIndex];
     }
 
     function openViewer(index) {
@@ -163,62 +154,17 @@
       viewer.classList.add('hidden');
     }
 
-    function showNext() {
-      showImage(currentIndex + 1);
-    }
-
-    function showPrev() {
-      showImage(currentIndex - 1);
-    }
-
-    let startX = 0;
-    let startY = 0;
-
-    viewer.addEventListener('touchstart', e => {
-      if (e.touches.length === 1) {
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-      }
-    });
-
-    viewer.addEventListener('touchend', e => {
-      const dx = e.changedTouches[0].clientX - startX;
-      const dy = e.changedTouches[0].clientY - startY;
-      if (Math.abs(dx) > 30 || Math.abs(dy) > 30) {
-        if (Math.abs(dx) >= Math.abs(dy)) {
-          dx < 0 ? showNext() : showPrev();
-        } else {
-          dy < 0 ? showNext() : showPrev();
-        }
-      }
-    });
-
-    viewer.addEventListener('dblclick', closeViewer);
-
-    document.addEventListener('keydown', e => {
-      if (viewer.classList.contains('hidden')) return;
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') showNext();
-      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') showPrev();
-      else if (e.key === 'Escape') closeViewer();
-    });
-
     async function init() {
       const container = document.getElementById('gallery');
       filenames = await fetchFilenames();
-
+      document.getElementById('post-count').textContent = filenames.length;
       filenames.forEach((name, idx) => {
         const div = document.createElement('div');
         div.className = 'gallery-item';
-
         const img = document.createElement('img');
         img.src = baseURL + name;
-
-        const caption = document.createElement('div');
-        caption.className = 'caption';
-        caption.textContent = name;
-
+        img.alt = name;
         div.appendChild(img);
-        div.appendChild(caption);
         div.addEventListener('click', () => openViewer(idx));
         container.appendChild(div);
       });
@@ -226,9 +172,18 @@
 
     init();
 
-    document.getElementById('dark-toggle').addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
+    viewer.addEventListener('click', closeViewer);
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeViewer();
     });
+
+    const toggle = document.getElementById('dark-toggle');
+    toggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      toggle.textContent = document.body.classList.contains('dark-mode') ? '\u263e' : '\u2600';
+    });
+    toggle.textContent = '\u2600';
   </script>
 </body>
 </html>
